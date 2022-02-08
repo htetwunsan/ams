@@ -13,7 +13,7 @@ class EpisodeService
     public function __construct(
         public Request $request
     ) {
-        header('Content-Type: application/json; charset=utf-8');
+        // header('Content-Type: application/json; charset=utf-8');
     }
 
     private function getCrawler(string $url)
@@ -24,7 +24,9 @@ class EpisodeService
         curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36");
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($curl);
-        return new Crawler($result);
+        echo $result;
+        exit;
+        // return new Crawler($result);
     }
 
     public function recently(EpisodeFilter $type = EpisodeFilter::SUB): string
