@@ -1,0 +1,15 @@
+{
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": [
+            "app/Core/helpers.php"
+        ]
+    },
+    "require": {
+        "symfony/dom-crawler": "^6.0",
+        "symfony/css-selector": "^6.0",
+        "psr/container": "^2.0"
+    }
+}
