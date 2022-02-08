@@ -17,20 +17,17 @@ class EpisodeService
     ) {
     }
 
-    private function getContent(string $url)
+    private function getCrawler(string $url)
     {
-        $try = 0;
-        while ($try < 5) {
-            $result = file_get_contents($url);
-            if ($result === false) {
-                sleep(3);
-                continue;
-            }
-            return $result;
-            $try++;
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($curl);
+        curl_close($curl);
+        if ($result === false) {
+            throw new Exception("Cannot fetch contents.");
         }
-
-        throw new Exception("Cannot fetch contents even after $try tries.");
+        return new Crawler($result);
     }
 
     public function recently(EpisodeFilter $type = EpisodeFilter::SUB): string
@@ -68,9 +65,9 @@ class EpisodeService
         $key = $key . "-$page";
 
         return cache()->remember($key, function () use ($url, $path) {
-            $content = $this->getContent($url);
+            // $content = $this->getContent($url);
 
-            $crawler = new Crawler($content);
+            $crawler =  $this->getCrawler($url);
 
             $episodes = $this->getEpisodes($crawler);
 
@@ -88,9 +85,9 @@ class EpisodeService
         $url = "https://asianembed.io/search.html?keyword=$keyword&page=$page";
         $key = "search-$keyword-$page";
         return cache()->remember($key, function () use ($url, $keyword) {
-            $content = $this->getContent($url);
+            // $content = $this->getContent($url);
 
-            $crawler = new Crawler($content);
+            $crawler =  $this->getCrawler($url);
 
             $episodes = $this->getEpisodes($crawler);
 
@@ -115,9 +112,9 @@ class EpisodeService
         $key = "detail-$slug";
 
         return cache()->remember($key, function () use ($url) {
-            $content = $this->getContent($url);
+            // $content = $this->getContent($url);
 
-            $crawler = new Crawler($content);
+            $crawler =  $this->getCrawler($url);
 
             $crawler = $crawler->filter('div.video-info-left');
 
