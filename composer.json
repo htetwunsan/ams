@@ -10,6 +10,6 @@
     "require": {
         "symfony/dom-crawler": "^6.0",
         "symfony/css-selector": "^6.0",
-        "psr/container": "^2.0",
+        "psr/container": "^2.0"
     }
 }
