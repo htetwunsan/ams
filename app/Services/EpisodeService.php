@@ -3,10 +3,8 @@
 namespace App\Services;
 
 use App\Enums\EpisodeFilter;
-use App\Enums\EpisodeFilter as EnumsEpisodeFilter;
 use InvalidArgumentException;
 use App\Core\Request;
-use Exception;
 use Symfony\Component\DomCrawler\Crawler;
 
 class EpisodeService
@@ -15,20 +13,17 @@ class EpisodeService
     public function __construct(
         public Request $request
     ) {
+        header('Content-Type: application/json; charset=utf-8');
     }
 
     private function getCrawler(string $url)
     {
-        $agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36";
         $curl = curl_init($url);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_COOKIE, "_ga=GA1.2.1499707419.1637397018; trc_cookie_storage=taboola%2520global%253Auser-id%3Dac7c82e1-758f-4204-853d-95ef77d069d6-tuct7eabe8c; _cc_id=a9378c32a519a27df5965cfd631d6358; tvshow=bh41d2bgk68atjeo4ibc34nic0; dsq__=3ltsht4pb72up; token=6202c2638c107");
+        curl_setopt($curl, CURLOPT_REFERER, "http:127.0.0.1:8000");
+        curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36");
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_USERAGENT, $agent);
         $result = curl_exec($curl);
-        curl_close($curl);
-        if ($result === false) {
-            throw new Exception("Cannot fetch contents.");
-        }
         return new Crawler($result);
     }
 
@@ -41,23 +36,23 @@ class EpisodeService
                 $url = 'https://asianembed.io';
                 $key = 'recently-sub';
                 break;
-            case EnumsEpisodeFilter::RAW:
+            case EpisodeFilter::RAW:
                 $url = 'https://asianembed.io/recently-added-raw';
                 $key = 'recently-raw';
                 break;
-            case EnumsEpisodeFilter::MOVIE:
+            case EpisodeFilter::MOVIE:
                 $url = 'https://asianembed.io/movies';
                 $key = 'recently-movies';
                 break;
-            case EnumsEpisodeFilter::KSHOW:
+            case EpisodeFilter::KSHOW:
                 $url = 'https://asianembed.io/kshow';
                 $key = 'recently-kshow';
                 break;
-            case EnumsEpisodeFilter::POPULAR:
+            case EpisodeFilter::POPULAR:
                 $url = 'https://asianembed.io/popular';
                 $key = 'recently-popular';
                 break;
-            case EnumsEpisodeFilter::ONGOING_SERIES:
+            case EpisodeFilter::ONGOING_SERIES:
                 $url = 'https://asianembed.io/ongoing-series';
                 $key = 'recently-ongoing-series';
                 break;

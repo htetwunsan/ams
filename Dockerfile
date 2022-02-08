@@ -38,6 +38,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && echo listen = 0.0.0.0:9000 >> /etc/php/8.1/fpm/pool.d/www.conf
 
+# RUN apt-get update && apt-get install wget
+# RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# RUN apt-get --assume-yes install ./google-chrome-stable_current_amd64.deb
+# RUN rm -rf ./google-chrome-stable_current_amd64.deb
+
 COPY ./start-container.sh /usr/local/bin/start-container.sh
 COPY php.ini /etc/php/8.1/cli/conf.d/php.ini
 

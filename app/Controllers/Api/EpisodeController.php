@@ -7,11 +7,6 @@ use App\Enums\EpisodeFilter;
 
 class EpisodeController
 {
-    public function __construct()
-    {
-        header('Content-Type: application/json; charset=utf-8');
-    }
-
     public function recentlyAddedSub(EpisodeService $episodeService): string
     {
         return $episodeService->recently(EpisodeFilter::SUB);
