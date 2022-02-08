@@ -24,9 +24,9 @@ class EpisodeService
         curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36");
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($curl);
-        echo $result;
-        exit;
-        // return new Crawler($result);
+        // echo $result;
+        // exit;
+        return new Crawler($result);
     }
 
     public function recently(EpisodeFilter $type = EpisodeFilter::SUB): string
