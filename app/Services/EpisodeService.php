@@ -19,9 +19,11 @@ class EpisodeService
 
     private function getCrawler(string $url)
     {
+        $agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36";
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_USERAGENT, $agent);
         $result = curl_exec($curl);
         curl_close($curl);
         if ($result === false) {
