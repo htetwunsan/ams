@@ -14,7 +14,10 @@ class Database
     {
         try {
             $host = $_ENV['host'] ?? 'mysql';
-            $this->pdo = new PDO("mysql:host=$host;port=3306;dbname=my_db", 'root', 'root');
+            $db = 'my_db';
+            $this->pdo = new PDO("mysql:host=$host;port=3306;", 'root', 'root');
+            $this->pdo->query("CREATE DATABASE IF NOT EXISTS $db");
+            $this->pdo->query("use $db");
         } catch (PDOException $e) {
             throw new PDOException($e->getMessage(), $e->getCode());
         }
