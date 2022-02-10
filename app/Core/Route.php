@@ -53,7 +53,10 @@ class Route
 
     public function matches(string $method, string $path): bool
     {
-        if ($this->method === $method && $this->path === $path) {
+        if ($this->method !== $method) {
+            return false;
+        }
+        if ($this->path === $path) {
             return true;
         }
         $parameterNames = [];
@@ -86,12 +89,15 @@ class Route
 
         $parameterValues = [];
 
-        if (count($matches[1]) > 0) {
+        if (count($matches) > 0) {
             // if the route matches the request path then
             // we need to assemble the parameters before
             // we can return true for the match
-            foreach ($matches[1] as $value) {
-                array_push($parameterValues, $value);
+            foreach ($matches as $key => $value) {
+                if ($key === 0) continue;
+                foreach ($value as $v) {
+                    array_push($parameterValues, $v);
+                }
             }
             // make an empty array so that we can still
             // call array_combine with optional parameters

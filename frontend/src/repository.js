@@ -38,7 +38,12 @@ const repository = {
     },
 
     getDetail: (slug, controller) => {
-        return axios.get(repository.baseApiUrl + slug, { signal: controller?.signal });
+        console.log(repository.baseApiUrl + '/videos' + slug);
+        return axios.get(repository.baseApiUrl + '/videos' + slug, { signal: controller?.signal });
+    },
+
+    getRandom: (controller) => {
+        return axios.get(repository.baseApiUrl + '/episodes/random', { signal: controller?.signal });
     },
 
     getSub: (controller) => {

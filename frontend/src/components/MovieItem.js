@@ -25,12 +25,12 @@ export default function MovieItem({ movie }) {
             <article className="flex-grow flex flex-col items-stretch gap-y-1 px-2">
                 <button className="text-base text-left font-semibold line-clamp-2 hover:text-sky-400 duration-200"
                     onClick={e => context.setSelectedMovie(movie)}>
-                    {detail ? detail.video.title : 'Loading...'}
+                    {detail ? detail.video_title : 'Loading...'}
                 </button>
 
                 <div className="flex-grow flex flex-col items-stretch my-2">
                     <blockquote className="text-sm italic tracking-wide border-l-4 border-sky-400 pl-4 line-clamp-6 md:line-clamp-8 lg:line-clamp-10 xl:line-clamp-12 2xl:line-clamp-14">
-                        {detail ? detail.video.description : 'Loading...'}
+                        {detail ? detail.video_description : 'Loading...'}
                     </blockquote>
 
                     <div className="flex mt-4">
@@ -56,7 +56,7 @@ export default function MovieItem({ movie }) {
                     <h6 className="text-sm italic">
                         {detail?.related_episodes?.length ?? 0} {(detail?.related_episodes?.length ?? 0) === 1 ? "Episode" : "Episodes"}
                     </h6>
-                    <time className="text-sm font-light italic">{movie.updated_at}</time>
+                    <time className="text-sm font-light italic">{movie.original_date}</time>
                 </div>
             </article>
         </div>

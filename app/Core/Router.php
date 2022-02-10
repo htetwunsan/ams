@@ -4,6 +4,9 @@ namespace App\Core;
 
 class Router
 {
+    /**
+     * @var Route[] $routes
+     */
     protected array $routes = [];
     protected array $errorHandlers = [];
 
@@ -15,6 +18,11 @@ class Router
     public function get(string $path, array|callable $handler)
     {
         $this->routes[] = new Route('GET', $path, $handler);
+    }
+
+    public function post(string $path, array|callable $handler)
+    {
+        $this->routes[] = new Route('POST', $path, $handler);
     }
 
     public function setErrorHandler(int $code, array|callable $handler)

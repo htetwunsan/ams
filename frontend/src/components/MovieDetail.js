@@ -45,7 +45,7 @@ export default function MovieDetail({ movie }) {
                     <iframe
                         className="absolute top-0 left-0 w-full h-full"
                         src={detail?.embed}
-                        title={detail?.video.title}
+                        title={detail?.video_title}
                         allowFullScreen={true}
                         frameBorder="0"
                         marginWidth="0"
@@ -56,17 +56,17 @@ export default function MovieDetail({ movie }) {
             <article className="flex flex-col items-stretch gap-y-1 px-2">
                 <button className="text-base text-left font-semibold line-clamp-2 hover:text-sky-400 duration-200"
                     onClick={e => context.setSelectedMovie(movie)}>
-                    {detail ? detail.video.title : 'Loading...'}
+                    {detail ? detail.video_title : 'Loading...'}
                 </button>
 
                 <div className="flex-grow flex flex-col items-stretch my-2">
                     <blockquote className=" text-sm italic tracking-wide border-l-4 border-sky-400 pl-4 line-clamp-6 md:line-clamp-8 lg:line-clamp-10 xl:line-clamp-12 2xl:line-clamp-14">
-                        {detail ? detail.video.description : 'Loading...'}
+                        {detail ? detail.video_description : 'Loading...'}
                     </blockquote>
                 </div>
 
                 <div className="flex justify-end leading-none mb-2">
-                    <time className="text-sm font-light italic">{movie.updated_at}</time>
+                    <time className="text-sm font-light italic">{movie.original_date}</time>
                 </div>
             </article>
 
@@ -86,7 +86,7 @@ export default function MovieDetail({ movie }) {
                                     Episode - {movie.number}
                                 </h6>
                                 <time className="">
-                                    <time className="text-xs font-light italic leading-none">{movie.updated_at}</time>
+                                    <time className="text-xs font-light italic leading-none">{movie.original_date}</time>
                                 </time>
                             </li>
                         ))

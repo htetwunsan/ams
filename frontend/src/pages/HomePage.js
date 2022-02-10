@@ -53,7 +53,7 @@ export default function HomePage() {
                         </main>
 
                     </div>
-                    <div className="basis-1/4 flex-none flex flex-col items-stretch">
+                    <div className="basis-0 md:basis-1/4 flex-none flex flex-col items-stretch">
                         <MainRightContent />
                     </div>
                 </div>

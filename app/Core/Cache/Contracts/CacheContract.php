@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Core\Contracts;
+namespace App\Core\Cache\Contracts;
 
-interface Cache
+interface CacheContract
 {
     public function remember(string $key, callable $getValue, int $seconds = 300);
 }

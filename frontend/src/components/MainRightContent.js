@@ -8,8 +8,8 @@ export default function MainRightContent({ filter }) {
 
     useEffect(() => {
         const controller = new AbortController();
-        repository.getList(filter ?? 'ongoing series', controller).then(response => {
-            setMovies(response.data.data);
+        repository.getRandom(controller).then(response => {
+            setMovies(response.data);
         }).catch(reason => console.log(reason));
         return () => {
             controller.abort();
@@ -18,6 +18,9 @@ export default function MainRightContent({ filter }) {
 
     return (
         <div className="flex flex-col items-stretch">
+            {movies &&
+                <h2 className="text-base italic font-light border-l-4 border-sky-400 pl-2 ml-2 mb-1">Random</h2>
+            }
             <ul className="list-none grid grid-cols-1 md:grid-cols-2 gap-1 px-2 py-1">
                 {
                     movies.map((movie, index) => (

@@ -5,28 +5,21 @@ namespace App\Services;
 use App\Enums\EpisodeFilter;
 use InvalidArgumentException;
 use App\Core\Request;
+use App\Services\Contracts\EpisodeContract;
 use Symfony\Component\DomCrawler\Crawler;
 
-class EpisodeService
+class EpisodeService implements EpisodeContract
 {
 
     public function __construct(
         public Request $request
     ) {
-        // header('Content-Type: application/json; charset=utf-8');
+        header('Content-Type: application/json; charset=utf-8');
     }
 
     private function getCrawler(string $url)
     {
-        $curl = curl_init($url);
-        curl_setopt($curl, CURLOPT_COOKIE, "_ga=GA1.2.1499707419.1637397018; trc_cookie_storage=taboola%2520global%253Auser-id%3Dac7c82e1-758f-4204-853d-95ef77d069d6-tuct7eabe8c; _cc_id=a9378c32a519a27df5965cfd631d6358; tvshow=bh41d2bgk68atjeo4ibc34nic0; dsq__=3ltsht4pb72up; token=6202c2638c107");
-        curl_setopt($curl, CURLOPT_REFERER, "http://127.0.0.1:8000");
-        curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $result = curl_exec($curl);
-        // echo $result;
-        // exit;
-        return new Crawler($result);
+        return new Crawler(file_get_contents($url));
     }
 
     public function recently(EpisodeFilter $type = EpisodeFilter::SUB): string
@@ -64,7 +57,6 @@ class EpisodeService
         $key = $key . "-$page";
 
         return cache()->remember($key, function () use ($url, $path) {
-            // $content = $this->getContent($url);
 
             $crawler =  $this->getCrawler($url);
 
@@ -84,7 +76,6 @@ class EpisodeService
         $url = "https://asianembed.io/search.html?keyword=$keyword&page=$page";
         $key = "search-$keyword-$page";
         return cache()->remember($key, function () use ($url, $keyword) {
-            // $content = $this->getContent($url);
 
             $crawler =  $this->getCrawler($url);
 
@@ -111,7 +102,6 @@ class EpisodeService
         $key = "detail-$slug";
 
         return cache()->remember($key, function () use ($url) {
-            // $content = $this->getContent($url);
 
             $crawler =  $this->getCrawler($url);
 
@@ -213,5 +203,10 @@ class EpisodeService
             'created_at' => $date,
             'updated_at' => $date
         ];
+    }
+
+    public function random(): string
+    {
+        return "Not Implemented";
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Core;
+namespace App\Core\Cache;
 
-use App\Core\Contracts\Cache;
+use App\Core\Cache\Contracts\CacheContract;
 
-class FileCache implements Cache
+class FileCache implements CacheContract
 {
     public function remember(string $key, callable $getValue, int $seconds = 300)
     {
