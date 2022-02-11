@@ -76,7 +76,7 @@ export default function MovieDetail({ movie }) {
                 <ul className="list-none flex items-center gap-2 flex-wrap mt-2">
                     {
                         detail?.related_episodes.map((movie, index) => (
-                            <li className="basis-[15%] flex-none flex flex-col items-stretch" key={movie.slug}>
+                            <li className="basis-[31%] sm:basis-[23%] flex-none flex flex-col items-stretch" key={movie.slug}>
                                 <MoviePoster movie={movie} wrapperClasses="min-h-[56px] min-w-[40px]" iconClasses="text-4xl" children={
                                     <div className={clsx("absolute top-1 left-1 bg-slate-900 text-xs rounded py-0.5 px-px", movie.sub && "text-sky-400")}>
                                         {movie.sub ? 'SUB' : 'RAW'}

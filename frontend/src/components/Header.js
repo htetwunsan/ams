@@ -34,7 +34,7 @@ export default function Header({ setFilter, setPaginator, keyword, setKeyword })
                     <form className="flex flex-col items-stretch" onSubmit={handleSubmit}>
                         <input
                             ref={ref}
-                            className="w-full h-10 px-4 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-sky-400 dark:focus:border-sky-400 focus:outline-none focus:ring-0 dark:placeholder-gray-400"
+                            className="w-full h-10 px-4 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-sky-400 focus:outline-none focus:ring-0"
                             type="search"
                             value={keyword}
                             onChange={e => setKeyword(e.target.value)}

@@ -37,8 +37,8 @@ export default function HomePage() {
                 <Header setFilter={overrideSetFilter} setPaginator={setPaginator} keyword={keyword} setKeyword={setKeyword} />
                 <TopMovieCarousel />
                 <div className="flex-grow flex mt-2">
-                    <div className="basis-3/4 flex flex-col items-stretch">
-                        <div className="flex flex-col items-stretch px-6">
+                    <div className="flex-grow flex flex-col items-stretch">
+                        <div className="flex flex-col items-stretch px-4 sm:px-6">
                             <NavFilter filter={filter} setFilter={overrideSetFilter} />
                             {
                                 (filter === 'search' && paginator) &&
@@ -47,13 +47,13 @@ export default function HomePage() {
                                 </blockquote>
                             }
                         </div>
-                        <main className="flex-grow flex flex-col items-stretch px-6 py-4">
+                        <main className="flex-grow flex flex-col items-stretch px-4 sm:px-6 py-4">
                             {!selectedMovie && <MovieList filter={filter} paginator={paginator} setPaginator={setPaginator} />}
                             {selectedMovie && <MovieDetail movie={selectedMovie} />}
                         </main>
 
                     </div>
-                    <div className="basis-0 md:basis-1/4 flex-none flex flex-col items-stretch">
+                    <div className="basis-1/4 flex-none hidden sm:flex flex-col items-stretch">
                         <MainRightContent />
                     </div>
                 </div>

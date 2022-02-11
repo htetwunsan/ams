@@ -19,11 +19,6 @@ class Scraper
 {
     private $baseUrl = 'https://asianembed.io';
 
-    public function __construct(
-        private QueryBuilderContract $qb
-    ) {
-    }
-
     private function getCrawler(string $url): Crawler
     {
         while (true) {
@@ -108,7 +103,7 @@ class Scraper
                 'content' => $postData
             ]
         ]);
-        $result = file_get_contents('http://localhost:8001/api/episodes', false, $context);
+        $result = file_get_contents('https://ams.htetwunsan.com/api/episodes', false, $context);
         if ($result === false) {
             echo "Something went wrongs! Exiting....";
             exit;
@@ -120,21 +115,27 @@ class Scraper
 
     public function run(string $tag, string $url)
     {
-        $crawler = $this->getCrawler($url);
+        for ($page = 3; $page >= 2; --$page) {
+            $url .= "?page=$page";
 
-        $slugs = $this->getEpisodeSlugs($crawler); // list of slugs from list page
+            echo "Start scraping $url with tag $tag." . PHP_EOL;
 
-        foreach ($slugs as $slug) {
-            $crawler = $this->getCrawler($this->baseUrl . $slug)->filter('div.video-info-left');
+            $crawler = $this->getCrawler($url);
 
-            $allEpisodes = $this->getAllEpisodes($crawler);
+            $slugs = $this->getEpisodeSlugs($crawler); // list of slugs from list page
 
-            foreach ($allEpisodes as $key => $episode) {
-                $crawler = $this->getCrawler($this->baseUrl . $episode['slug'])->filter('div.video-info-left');
+            foreach ($slugs as $slug) {
+                $crawler = $this->getCrawler($this->baseUrl . $slug)->filter('div.video-info-left');
 
-                $episode = $this->getEpisodeDetail($crawler);
+                $allEpisodes = $this->getAllEpisodes($crawler);
 
-                $this->uploadEpisode(array_merge($episode, $allEpisodes[$key], ['tag' => $tag]));
+                foreach ($allEpisodes as $key => $episode) {
+                    $crawler = $this->getCrawler($this->baseUrl . $episode['slug'])->filter('div.video-info-left');
+
+                    $episode = $this->getEpisodeDetail($crawler);
+
+                    $this->uploadEpisode(array_merge($episode, $allEpisodes[$key], ['tag' => $tag]));
+                }
             }
         }
     }
@@ -143,8 +144,6 @@ class Scraper
 $app = new Application(__DIR__);
 
 (require base_path() . '/app/bootstrap.php')($app);
-
-$_ENV['host'] = '127.0.0.1';
 
 /**
  * @var Scraper $scraper
@@ -155,5 +154,4 @@ $arg = $urls[$argv[1]];
 $url = $arg['url'];
 $tag = $arg['tag'];
 
-echo "Start scraping $url with tag $tag." . PHP_EOL;
 $scraper->run($tag, $url);
