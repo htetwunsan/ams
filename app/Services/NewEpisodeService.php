@@ -28,6 +28,7 @@ class NewEpisodeService implements EpisodeContract
             EpisodeFilter::POPULAR => 'popular',
             EpisodeFilter::ONGOING_SERIES => 'ongoing'
         };
+        $sub = $tag === 'raw' ? true : false;
         $total = $this->qb->getPdo()->query("SELECT COUNT(id) FROM episodes WHERE tag = '$tag'")->fetchColumn();
 
         $paginator = $this->paginator($total);
@@ -35,7 +36,7 @@ class NewEpisodeService implements EpisodeContract
         $limit = 20;
 
         $offset = (($this->request->getBody()['page'] ?? 1) - 1) * $limit;
-        $paginator['data'] = $this->qb->select('episodes', [], ['tag' => $tag], ['original_date' => 'DESC', 'updated_at' => 'DESC'], $limit, $offset);
+        $paginator['data'] = $this->qb->select('episodes', [], ['tag' => $tag, 'sub' => $sub], ['original_date' => 'DESC', 'updated_at' => 'DESC'], $limit, $offset);
 
         header('Content-Type: application/json; charset=utf-8');
         return json_encode($paginator);
