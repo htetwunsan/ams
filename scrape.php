@@ -24,6 +24,7 @@ class Scraper
         while (true) {
             $content = file_get_contents($url);
             if ($content === false) {
+                echo "Cannot fetch content from $url" . PHP_EOL;
                 sleep(5);
                 continue;
             }
@@ -103,10 +104,12 @@ class Scraper
                 'content' => $postData
             ]
         ]);
-        $result = file_get_contents('https://ams.htetwunsan.com/api/episodes', false, $context);
-        if ($result === false) {
-            echo "Something went wrongs! Exiting....";
-            exit;
+        while (true) {
+            $result = file_get_contents('https://ams.htetwunsan.com/api/episodes', false, $context);
+            if ($result === false) {
+                echo "Cannot post content to https://ams.htetwunsan.com/api/episodes" . PHP_EOL;
+                sleep(5);
+            }
         }
         $result = json_decode($result, true);
         $resultEpisode = $result['episode'];
