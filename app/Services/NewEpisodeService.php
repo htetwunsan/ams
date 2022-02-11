@@ -28,7 +28,7 @@ class NewEpisodeService implements EpisodeContract
             EpisodeFilter::POPULAR => 'popular',
             EpisodeFilter::ONGOING_SERIES => 'ongoing'
         };
-        $sub = $tag === 'raw' ? true : false;
+        $sub = $tag === 'raw' ? false : true;
         $total = $this->qb->getPdo()->query("SELECT COUNT(id) FROM episodes WHERE tag = '$tag'")->fetchColumn();
 
         $paginator = $this->paginator($total);
