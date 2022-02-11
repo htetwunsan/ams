@@ -29,7 +29,7 @@ class NewEpisodeService implements EpisodeContract
             EpisodeFilter::ONGOING_SERIES => 'ongoing'
         };
         $sub = $tag === 'raw' ? false : true;
-        $total = $this->qb->getPdo()->query("SELECT COUNT(id) FROM episodes WHERE tag = '$tag'")->fetchColumn();
+        $total = $this->qb->getPdo()->query("SELECT COUNT(id) FROM episodes WHERE tag = '$tag' AND sub = '$sub'")->fetchColumn();
 
         $paginator = $this->paginator($total);
 
@@ -44,43 +44,51 @@ class NewEpisodeService implements EpisodeContract
 
     private function paginator(int $total, int $limit = 20)
     {
-        $path = $this->request->path() . "?page=";
         $totalPages = ceil($total / $limit);
         $currentPage = $this->request->getBody()['page'] ?? 1;
         $nextPage = $this->getNextPage($currentPage, $totalPages);
-        $previousPage = $this->getPreviousPage(2);
-        $moreUrls = $this->getMoreUrls($currentPage, $totalPages);
+        $previousPage = $this->getPreviousPage($currentPage);
+        $morePages = $this->getMorePages($currentPage, $totalPages);
+        $firstPage = in_array(1, $morePages) ? null : 1;
+        $lastPage = in_array($totalPages, $morePages) ? null : $totalPages;
         return [
-            'next_page_url' => $nextPage,
-            'previous_page_url' => $previousPage,
-            'active_url' => $path . $currentPage,
-            'more_urls' => $moreUrls
+            'next_page_url' => $this->mapPageToPath($nextPage),
+            'previous_page_url' => $this->mapPageToPath($previousPage),
+            'active_url' => $this->mapPageToPath($currentPage),
+            'first_page_url' => $this->mapPageToPath($firstPage),
+            'last_page_url' => $this->mapPageToPath($lastPage),
+            'more_urls' => array_map(fn ($p) => $this->mapPageToPath($p), $morePages)
         ];
     }
 
-    private function getNextPage(int $current, int $totalPages): string|null
+    public function mapPageToPath(int|null $page): string|null
     {
+        if (is_null($page)) return null;
+
         $path = $this->request->path() . "?page=";
-        return $current + 1 <= $totalPages ? $path . $current + 1 : null;
+        return $path . $page;
     }
 
-    private function getPreviousPage(int $current): string|null
+    private function getNextPage(int $current, int $totalPages): int|null
     {
-        $path = $this->request->path() . "?page=";
-        return $current - 1 >= 1 ? $path . $current - 1 : null;
+        return $current + 1 <= $totalPages ? $current + 1 : null;
     }
 
-    private function getMoreUrls(int $current, int $totalPages, int $left = 2, int $right = 2): array
+    private function getPreviousPage(int $current): int|null
     {
-        $path = $this->request->path() . "?page=";
-        $moreUrls = [];
+        return $current - 1 >= 1 ? $current - 1 : null;
+    }
+
+    private function getMorePages(int $current, int $totalPages, int $left = 2, int $right = 2): array
+    {
+        $morePages = [];
         for ($i = max($current - $left, 1); $i < $current; ++$i) {
-            $moreUrls[] = $path . $i;
+            $morePages[] = $i;
         }
         for ($i = 0; $current + $i <= $totalPages && $i <= $right; ++$i) {
-            $moreUrls[] = $path . $current + $i;
+            $morePages[] = $current + $i;
         }
-        return $moreUrls;
+        return $morePages;
     }
 
     public function random(): string
