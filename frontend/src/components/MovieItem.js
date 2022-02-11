@@ -25,7 +25,8 @@ export default function MovieItem({ movie }) {
             <article className="flex-grow flex flex-col items-stretch gap-y-1 px-2">
                 <button className="text-base text-left font-semibold line-clamp-2 hover:text-sky-400 duration-200"
                     onClick={e => context.setSelectedMovie(movie)}>
-                    {detail ? detail.video_title : 'Loading...'}
+                    {movie.name}
+                    {/* {detail ? detail.video_title : 'Loading...'} */}
                 </button>
 
                 <div className="flex-grow flex flex-col items-stretch my-2">
