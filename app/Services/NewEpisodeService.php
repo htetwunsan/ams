@@ -66,14 +66,14 @@ class NewEpisodeService implements EpisodeContract
     private function getPreviousPage(int $current): string|null
     {
         $path = $this->request->path() . "?page=";
-        return $current - 1 > 1 ? $path . $current - 1 : null;
+        return $current - 1 >= 1 ? $path . $current - 1 : null;
     }
 
     private function getMoreUrls(int $current, int $totalPages, int $left = 2, int $right = 2): array
     {
         $path = $this->request->path() . "?page=";
         $moreUrls = [];
-        for ($i = $current - $left; $i >= 1 && $i < $current; ++$i) {
+        for ($i = max($current - $left, 1); $i < $current; ++$i) {
             $moreUrls[] = $path . $i;
         }
         for ($i = 0; $current + $i <= $totalPages && $i <= $right; ++$i) {

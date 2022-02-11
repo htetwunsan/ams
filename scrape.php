@@ -17,8 +17,8 @@ $urls = [
 class Scraper
 {
     private $baseUrl = 'https://asianembed.io';
-    // private $postUrl = 'https://ams.htetwunsan.com';
-    private $postUrl = 'http://localhost:8001';
+    private $postUrl = 'https://ams.htetwunsan.com';
+    // private $postUrl = 'http://localhost:8001';
 
     private function getCrawler(string $url): Crawler
     {
@@ -148,15 +148,16 @@ class Scraper
     public function run(string $tag, string $url)
     {
         for ($page = 1; $page <= 5; ++$page) {
-            $url .= "?page=$page";
+            $newUrl = $url . "?page=$page";
 
-            echo "Start scraping $url with tag $tag." . PHP_EOL;
-
-            $crawler = $this->getCrawler($url);
+            echo "Start scraping $newUrl with tag $tag." . PHP_EOL;
+            // crawling list
+            $crawler = $this->getCrawler($newUrl);
 
             $slugs = $this->getEpisodeSlugs($crawler); // list of slugs from list page
 
             foreach ($slugs as $slug) {
+                // crawling detail
                 $crawler = $this->getCrawler($this->baseUrl . $slug)->filter('div.video-info-left');
 
                 $allEpisodes = $this->getAllEpisodes($crawler);
@@ -170,6 +171,7 @@ class Scraper
                         echo "Episode " . $episode['name'] . " already existed. Skipping..." . PHP_EOL;
                         continue;
                     }
+                    // crawling detail
                     $crawler = $this->getCrawler($this->baseUrl . $episode['slug'])->filter('div.video-info-left');
 
                     $episode = $this->getEpisodeDetail($crawler);
