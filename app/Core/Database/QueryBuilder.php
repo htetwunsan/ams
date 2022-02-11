@@ -42,7 +42,12 @@ class QueryBuilder implements QueryBuilderContract
             $orderClause = substr($orderClause, 0, -1);
             $query .= " ORDER BY $orderClause";
         }
-        $query .= " LIMIT $limit OFFSET $offset";
+        if ($limit > 0) {
+            $query .= " LIMIT $limit";
+        }
+        if ($offset > 0) {
+            $query .= " OFFSET $offset";
+        }
         $stmt = $this->getPdo()->prepare($query);
         foreach ($wheres as $key => $value) {
             $type = $this->getPdoParam($value);

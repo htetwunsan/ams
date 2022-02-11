@@ -150,4 +150,52 @@ class NewEpisodeService implements EpisodeContract
         header('Content-Type: application/json; charset=utf-8');
         return json_encode($result);
     }
+
+    public function store(): string
+    {
+        $data = $this->request->getBody();
+        $data['slug'] = $this->normaliseSlug($data['slug'], $data['tag']); // eg. /videos/abc-def-episode-1 to /sub/abc-def-episode-1
+        $resultEpisode = $this->qb->upsert('episodes', [
+            'slug' => $data['slug'],
+            'tag' => $data['tag'],
+            'video_cover' => $data['video']['cover'],
+            'video_title' => $data['video']['title'],
+            'video_description' => $data['video']['description'],
+            'original_id' => $data['id'],
+            'embed' => $data['embed'],
+            'name' => $data['name'],
+            'number' => $data['number'],
+            'image_src' => $data['image']['src'],
+            'image_alt' => $data['image']['alt'],
+            'sub' => $data['sub'],
+            'original_date' => date('Y-m-d H:i:s', strtotime($data['date']))
+        ], true);
+
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(201);
+        return json_encode(['episode' => $resultEpisode]);
+    }
+
+    public function getExistingEpisodes(): string
+    {
+        $data = $this->request->getBody();
+        $videoCover = $data['video_cover'];
+        $tag = $data['tag'];
+
+        $results = $this->qb->select('episodes', ['slug'], ['video_cover' => $videoCover, 'tag' => $tag], [], 0);
+
+        $results = array_map(fn ($result) => $result['slug'] = $this->reverseNormaliseSlug($result['slug'], $tag), $results);
+
+        return json_encode($results);
+    }
+
+    private function normaliseSlug(string $slug, string $tag): string
+    {
+        return str_replace('videos', $tag, $slug);
+    }
+
+    private function reverseNormaliseSlug(string $slug, string $tag): string
+    {
+        return str_replace($tag, 'videos', $slug);
+    }
 }

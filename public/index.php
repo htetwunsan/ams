@@ -45,6 +45,8 @@ $router->get('/api/videos/{tag}/{slug}', [EpisodeController::class, 'get']);
 
 $router->post('/api/episodes', [EpisodeController::class, 'store']);
 
+$router->post('/api/episodes/existing', [EpisodeController::class, 'getExistingEpisodes']);
+
 $router->setErrorHandler(404, function () {
     http_response_code(404);
     return "404 Not Found.";

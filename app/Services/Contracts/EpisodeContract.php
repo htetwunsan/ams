@@ -16,4 +16,8 @@ interface EpisodeContract
      * @throws InvalidArgumentException
      */
     public function get(): string;
+
+    public function store(): string;
+
+    public function getExistingEpisodes(): string;
 }

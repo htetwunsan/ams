@@ -3,7 +3,6 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use App\Core\Application;
-use App\Core\Database\Contracts\QueryBuilderContract;
 use Symfony\Component\DomCrawler\Crawler;
 
 $urls = [
@@ -18,6 +17,8 @@ $urls = [
 class Scraper
 {
     private $baseUrl = 'https://asianembed.io';
+    // private $postUrl = 'https://ams.htetwunsan.com';
+    private $postUrl = 'http://localhost:8001';
 
     private function getCrawler(string $url): Crawler
     {
@@ -94,6 +95,32 @@ class Scraper
         ];
     }
 
+    private function getExistingEpisodes(string $videoCover, string $tag): array
+    {
+        $postData = http_build_query([
+            'video_cover' => $videoCover,
+            'tag' => $tag
+        ]);
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => 'Content-type: application/x-www-form-urlencoded',
+                'content' => $postData
+            ]
+        ]);
+
+        while (true) {
+            $url = $this->postUrl . '/api/episodes/existing';
+            $result = file_get_contents($url, false, $context);
+            if ($result === false) {
+                echo "Cannot post content to $url" . PHP_EOL;
+                sleep(5);
+            }
+            break;
+        }
+        return json_decode($result, true);
+    }
+
     private function uploadEpisode(array $data)
     {
         $postData = http_build_query($data);
@@ -105,11 +132,13 @@ class Scraper
             ]
         ]);
         while (true) {
-            $result = file_get_contents('https://ams.htetwunsan.com/api/episodes', false, $context);
+            $url = $this->postUrl . '/api/episodes';
+            $result = file_get_contents($url, false, $context);
             if ($result === false) {
-                echo "Cannot post content to https://ams.htetwunsan.com/api/episodes" . PHP_EOL;
+                echo "Cannot post content to $url" . PHP_EOL;
                 sleep(5);
             }
+            break;
         }
         $result = json_decode($result, true);
         $resultEpisode = $result['episode'];
@@ -118,7 +147,7 @@ class Scraper
 
     public function run(string $tag, string $url)
     {
-        for ($page = 3; $page >= 2; --$page) {
+        for ($page = 1; $page <= 5; ++$page) {
             $url .= "?page=$page";
 
             echo "Start scraping $url with tag $tag." . PHP_EOL;
@@ -132,7 +161,15 @@ class Scraper
 
                 $allEpisodes = $this->getAllEpisodes($crawler);
 
+                $videoCover = $this->getEpisodeDetail($crawler)['video']['cover'];
+
+                $existingEpisodeSlugs = array_flip($this->getExistingEpisodes($videoCover, $tag));
+
                 foreach ($allEpisodes as $key => $episode) {
+                    if (array_key_exists($episode['slug'], $existingEpisodeSlugs)) {
+                        echo "Episode " . $episode['name'] . " already existed. Skipping..." . PHP_EOL;
+                        continue;
+                    }
                     $crawler = $this->getCrawler($this->baseUrl . $episode['slug'])->filter('div.video-info-left');
 
                     $episode = $this->getEpisodeDetail($crawler);

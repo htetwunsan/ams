@@ -54,29 +54,13 @@ class EpisodeController
         return $episodeService->get();
     }
 
-    public function store(Request $request, QueryBuilderContract $qb): string
+    public function getExistingEpisodes(EpisodeContract $episodeService): string
     {
-        $data = $request->getBody();
-        $exploded = explode('/', $data['slug']);
-        $tag = $data['tag'];
-        $resultEpisode = $qb->upsert('episodes', [
-            'slug' => '/' . $tag . '/' . end($exploded),
-            'tag' => $data['tag'],
-            'video_cover' => $data['video']['cover'],
-            'video_title' => $data['video']['title'],
-            'video_description' => $data['video']['description'],
-            'original_id' => $data['id'],
-            'embed' => $data['embed'],
-            'name' => $data['name'],
-            'number' => $data['number'],
-            'image_src' => $data['image']['src'],
-            'image_alt' => $data['image']['alt'],
-            'sub' => $data['sub'],
-            'original_date' => date('Y-m-d H:i:s', strtotime($data['date']))
-        ], true);
+        return $episodeService->getExistingEpisodes();
+    }
 
-        header('Content-Type: application/json; charset=utf-8');
-        http_response_code(201);
-        return json_encode(['episode' => $resultEpisode]);
+    public function store(EpisodeContract $episodeService): string
+    {
+        return $episodeService->store();
     }
 }
