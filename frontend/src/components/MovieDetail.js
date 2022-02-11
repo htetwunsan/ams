@@ -60,7 +60,7 @@ export default function MovieDetail({ movie }) {
                 </button>
 
                 <div className="flex-grow flex flex-col items-stretch my-2">
-                    <blockquote className=" text-sm italic tracking-wide border-l-4 border-sky-400 pl-4 line-clamp-6 md:line-clamp-8 lg:line-clamp-10 xl:line-clamp-12 2xl:line-clamp-14">
+                    <blockquote className=" text-sm italic tracking-wide border-l-4 border-sky-400 pl-4">
                         {detail ? detail.video_description : 'Loading...'}
                     </blockquote>
                 </div>

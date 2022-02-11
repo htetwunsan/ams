@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { useEffect, useState, useContext } from 'react';
 import { HomeContext } from '../pages/HomePage';
 import repository from '../repository';
@@ -30,7 +31,7 @@ export default function MovieItem({ movie }) {
                 </button>
 
                 <div className="flex-grow flex flex-col items-stretch my-2">
-                    <blockquote className="text-sm italic tracking-wide border-l-4 border-sky-400 pl-4 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 lg:line-clamp-7 xl:line-clamp-8 2xl:line-clamp-9">
+                    <blockquote className={clsx("text-sm italic tracking-wide border-l-4 border-sky-400 pl-4", "line-clamp-4 sm:line-clamp-5 md:line-clamp-7 lg:line-clamp-9 xl:line-clamp-11 2xl:line-clamp-13")}>
                         {detail ? detail.video_description : 'Loading...'}
                     </blockquote>
 
