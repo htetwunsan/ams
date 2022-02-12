@@ -7,13 +7,13 @@ use App\Core\Database\Contracts\QueryBuilderContract;
 class create_episodes_table_0001
 {
     public function __construct(
-        protected QueryBuilderContract $queryBuilder
+        protected QueryBuilderContract $qb
     ) {
     }
 
     public function up()
     {
-        $this->queryBuilder->getPdo()->exec(
+        $this->qb->getPdo()->exec(
             "CREATE TABLE IF NOT EXISTS episodes(
                 id INT UNSIGNED AUTO_INCREMENT,
                 slug VARCHAR(512) NOT NULL,
@@ -40,7 +40,7 @@ class create_episodes_table_0001
 
     public function down()
     {
-        $this->queryBuilder->getPdo()->exec(
+        $this->qb->getPdo()->exec(
             "DROP TABLE episodes"
         );
     }

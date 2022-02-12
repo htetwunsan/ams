@@ -7,10 +7,10 @@ use App\Core\Database\Contracts\QueryBuilderContract;
 use App\Core\Database\QueryBuilder;
 
 use App\Services\Contracts\EpisodeContract;
-use App\Services\NewEpisodeService;
+use App\Services\EpisodeService;
 
 return function (Application $app) {
-    $app->bind(EpisodeContract::class, NewEpisodeService::class);
+    $app->bind(EpisodeContract::class, EpisodeService::class);
     $app->bind(CacheContract::class, FileCache::class);
     $app->bind(QueryBuilderContract::class, QueryBuilder::class);
 };

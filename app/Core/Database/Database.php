@@ -63,6 +63,26 @@ class Database
         }
     }
 
+    public function resetMigrations()
+    {
+        $appliedMigrations = $this->getAppliedMigrations();
+
+        ksort($appliedMigrations);
+
+        $app = app();
+
+        foreach (array_reverse($appliedMigrations) as $class) {
+            $this->log("Rolling back migration $class");
+            $app->get("App\\Migrations\\$class")->down();
+            $this->log("Rolling back migraton $class");
+        }
+
+        $stmt = $this->pdo->prepare("TRUNCATE TABLE migrations");
+        $stmt->execute();
+
+        $this->log("All migrations are reset.");
+    }
+
     private function createMigrationsTable()
     {
         $this->pdo->exec(

@@ -17,8 +17,8 @@ $urls = [
 class Scraper
 {
     private $baseUrl = 'https://asianembed.io';
-    private $postUrl = 'https://ams.htetwunsan.com';
-    // private $postUrl = 'http://localhost:8001';
+    // private $postUrl = 'https://ams.htetwunsan.com';
+    private $postUrl = 'http://localhost:8001';
 
     private function getCrawler(string $url): Crawler
     {
@@ -147,7 +147,7 @@ class Scraper
 
     public function run(string $tag, string $url)
     {
-        for ($page = 1; $page <= 5; ++$page) {
+        for ($page = 1; $page <= 10; ++$page) {
             $newUrl = $url . "?page=$page";
 
             echo "Start scraping $newUrl with tag $tag." . PHP_EOL;
@@ -161,6 +161,7 @@ class Scraper
                 $crawler = $this->getCrawler($this->baseUrl . $slug)->filter('div.video-info-left');
 
                 $allEpisodes = $this->getAllEpisodes($crawler);
+                $allEpisodeCount = count($allEpisodes);
 
                 $videoCover = $this->getEpisodeDetail($crawler)['video']['cover'];
 
@@ -168,13 +169,14 @@ class Scraper
 
                 foreach ($allEpisodes as $key => $episode) {
                     if (array_key_exists($episode['slug'], $existingEpisodeSlugs)) {
-                        echo "Episode " . $episode['name'] . " already existed. Skipping..." . PHP_EOL;
+                        echo "Episode " . $episode['name'] . " is already existed. Skipping..." . PHP_EOL;
                         continue;
                     }
                     // crawling detail
                     $crawler = $this->getCrawler($this->baseUrl . $episode['slug'])->filter('div.video-info-left');
 
                     $episode = $this->getEpisodeDetail($crawler);
+                    $episode['video']['episode_count'] = $allEpisodeCount;
 
                     $this->uploadEpisode(array_merge($episode, $allEpisodes[$key], ['tag' => $tag]));
                 }

@@ -2,70 +2,102 @@
 
 namespace App\Services;
 
+use App\Core\Database\Contracts\QueryBuilderContract;
 use App\Enums\EpisodeFilter;
 use InvalidArgumentException;
 use App\Core\Request;
 use App\Services\Contracts\EpisodeContract;
-use Symfony\Component\DomCrawler\Crawler;
+use PDO;
 
 class EpisodeService implements EpisodeContract
 {
 
     public function __construct(
-        public Request $request
+        private Request $request,
+        private QueryBuilderContract $qb
     ) {
-        header('Content-Type: application/json; charset=utf-8');
-    }
-
-    private function getCrawler(string $url)
-    {
-        return new Crawler(file_get_contents($url));
     }
 
     public function recently(EpisodeFilter $type = EpisodeFilter::SUB): string
     {
-        $page = $this->request->getBody()['page'] ?? 1;
-        $path = $this->request->path();
-        switch ($type) {
-            case EpisodeFilter::SUB:
-                $url = 'https://asianembed.io';
-                $key = 'recently-sub';
-                break;
-            case EpisodeFilter::RAW:
-                $url = 'https://asianembed.io/recently-added-raw';
-                $key = 'recently-raw';
-                break;
-            case EpisodeFilter::MOVIE:
-                $url = 'https://asianembed.io/movies';
-                $key = 'recently-movies';
-                break;
-            case EpisodeFilter::KSHOW:
-                $url = 'https://asianembed.io/kshow';
-                $key = 'recently-kshow';
-                break;
-            case EpisodeFilter::POPULAR:
-                $url = 'https://asianembed.io/popular';
-                $key = 'recently-popular';
-                break;
-            case EpisodeFilter::ONGOING_SERIES:
-                $url = 'https://asianembed.io/ongoing-series';
-                $key = 'recently-ongoing-series';
-                break;
+        $tag = match ($type) {
+            EpisodeFilter::SUB => 'sub',
+            EpisodeFilter::RAW => 'raw',
+            EpisodeFilter::MOVIE => 'movie',
+            EpisodeFilter::KSHOW => 'show',
+            EpisodeFilter::POPULAR => 'popular',
+            EpisodeFilter::ONGOING_SERIES => 'ongoing'
+        };
+        $sub = $tag === 'raw' ? false : true;
+
+        $total = $this->qb->getPdo()->query("SELECT COUNT(id) FROM episodes WHERE tag = '$tag' AND sub = '$sub'")->fetchColumn();
+
+        $paginator = $this->paginator($total);
+
+        $limit = 20;
+
+        $offset = (($this->request->getBody()['page'] ?? 1) - 1) * $limit;
+        $paginator['data'] = $this->qb->select('episodes', [], ['tag' => $tag, 'sub' => $sub], ['original_date' => 'DESC', 'updated_at' => 'DESC'], $limit, $offset);
+
+        header('Content-Type: application/json; charset=utf-8');
+        return json_encode($paginator);
+    }
+
+    private function paginator(int $total, int $limit = 20)
+    {
+        $totalPages = ceil($total / $limit);
+        $currentPage = $this->request->getBody()['page'] ?? 1;
+        $nextPage = $this->getNextPage($currentPage, $totalPages);
+        $previousPage = $this->getPreviousPage($currentPage);
+        $morePages = $this->getMorePages($currentPage, $totalPages);
+        $firstPage =  empty($morePages) || in_array(1, $morePages) ? null : 1;
+        $lastPage = empty($morePages) || in_array($totalPages, $morePages) ? null : $totalPages;
+        return [
+            'next_page_url' => $this->mapPageToPath($nextPage),
+            'previous_page_url' => $this->mapPageToPath($previousPage),
+            'active_url' => $this->mapPageToPath($currentPage),
+            'first_page_url' => $this->mapPageToPath($firstPage),
+            'last_page_url' => $this->mapPageToPath($lastPage),
+            'more_urls' => array_map(fn ($p) => $this->mapPageToPath($p), $morePages)
+        ];
+    }
+
+    public function mapPageToPath(int|null $page): string|null
+    {
+        if (is_null($page)) return null;
+
+        $path = $this->request->path() . "?page=";
+        return $path . $page;
+    }
+
+    private function getNextPage(int $current, int $totalPages): int|null
+    {
+        return $current + 1 <= $totalPages ? $current + 1 : null;
+    }
+
+    private function getPreviousPage(int $current): int|null
+    {
+        return $current - 1 >= 1 ? $current - 1 : null;
+    }
+
+    private function getMorePages(int $current, int $totalPages, int $left = 2, int $right = 2): array
+    {
+        $morePages = [];
+        for ($i = max($current - $left, 1); $i < $current; ++$i) {
+            $morePages[] = $i;
         }
+        for ($i = 0; $current + $i <= $totalPages && $i <= $right; ++$i) {
+            $morePages[] = $current + $i;
+        }
+        return $morePages;
+    }
 
-        $url = $url . "?page=$page";
-        $key = $key . "-$page";
+    public function random(): string
+    {
+        $results = $this->qb->getPdo()->query("SELECT * from episodes ORDER BY RAND() LIMIT 20")->fetchAll(PDO::FETCH_ASSOC);
 
-        return cache()->remember($key, function () use ($url, $path) {
-
-            $crawler =  $this->getCrawler($url);
-
-            $episodes = $this->getEpisodes($crawler);
-
-            $paginator = $this->getPaginator($crawler, $episodes, $path);
-
-            return json_encode($paginator);
-        }, 180);
+        header('Content-Type: application/json; charset=utf-8');
+        return json_encode($results);
     }
 
     public function search(): string
@@ -73,18 +105,30 @@ class EpisodeService implements EpisodeContract
         $keyword = $this->request->getBody()['keyword'] ?? '';
         $page = $this->request->getBody()['page'] ?? 1;
 
-        $url = "https://asianembed.io/search.html?keyword=$keyword&page=$page";
-        $key = "search-$keyword-$page";
-        return cache()->remember($key, function () use ($url, $keyword) {
+        $q = "%$keyword%";
 
-            $crawler =  $this->getCrawler($url);
+        $results = cache()->remember($keyword, function () use ($q) {
+            $query = "SELECT DISTINCT * FROM episodes 
+            WHERE (name LIKE '$q' OR video_title LIKE '$q' OR video_description LIKE '$q')";
+            $results = $this->qb->getPdo()->query($query)->fetchAll(PDO::FETCH_ASSOC);
+            $uniqueResults = [];
+            foreach ($results as $result) {
+                $uniqueResults[$result['video_cover']] = $result;
+            }
+            return json_encode(array_values($uniqueResults));
+        }, 300);
 
-            $episodes = $this->getEpisodes($crawler);
+        $results = json_decode($results);
 
-            $paginator = $this->getPaginator($crawler, $episodes, $this->request->path(), $keyword);
+        $limit = 20;
+        $offset = ($page - 1) * $limit;
 
-            return json_encode($paginator);
-        }, 180);
+        $paginator = $this->paginator(count($results));
+
+        $paginator['data'] = array_slice($results, $offset, $limit);
+
+        header('Content-Type: application/json; charset=utf-8');
+        return json_encode($paginator);
     }
 
     /**
@@ -93,120 +137,76 @@ class EpisodeService implements EpisodeContract
      */
     public function get(): string
     {
+        $tag = $this->request->getParameters()['tag'] ?? 'sub';
         $slug = $this->request->getParameters()['slug'] ?? false;
+
+        $slug = '/' . $tag . '/' . $slug;
+
         if ($slug === false) {
-            throw new InvalidArgumentException('Request must have a valid slug.');
+            http_response_code(404);
+            return '404 Not Found';
         }
 
-        $url = "https://asianembed.io/videos/$slug";
-        $key = "detail-$slug";
+        $result = $this->qb->select('episodes', [], ['tag' => $tag, 'slug' => $slug]);
 
-        return cache()->remember($key, function () use ($url) {
+        if (!$result) {
+            http_response_code(404);
+            return '404 Not Found';
+        }
 
-            $crawler =  $this->getCrawler($url);
+        $result['related_episodes'] = $this->qb->select('episodes', [], ['tag' => $tag, 'video_cover' => $result['video_cover']], [], 2000);
 
-            $crawler = $crawler->filter('div.video-info-left');
 
-            $episodes = $this->getEpisodes($crawler, true);
-
-            $embed = $crawler->filter('div.play-video')->filter('iframe');
-            $url = parse_url($embed->attr('src'));
-            parse_str($url['query'], $q);
-            $description = trim($crawler->filter('div.video-details')->filter('div.post-entry')->text());
-
-            $episodeDetail = [
-                'id' => $q['id'],
-                'embed' => $embed->attr('src'),
-                'video' => [
-                    'title' => $q['title'],
-                    'cover' => $q['cover'],
-                    'description' => $description,
-                ],
-                'related_episodes' => $episodes
-            ];
-
-            return json_encode($episodeDetail);
-        }, 180);
+        header('Content-Type: application/json; charset=utf-8');
+        return json_encode($result);
     }
 
-    private function getPaginator(Crawler $crawler, array $episodes, string $path, string $keyword = ""): array
+    public function store(): string
     {
-        $previousPage = null;
-        $nextPage = null;
-        $activePage = null;
-        $urls = [];
+        $data = $this->request->getBody();
+        $data['slug'] = $this->normaliseSlug($data['slug'], $data['tag']); // eg. /videos/abc-def-episode-1 to /sub/abc-def-episode-1
+        $resultEpisode = $this->qb->upsert('episodes', [
+            'slug' => $data['slug'],
+            'tag' => $data['tag'],
+            'video_cover' => $data['video']['cover'],
+            'video_title' => $data['video']['title'],
+            'video_description' => $data['video']['description'],
+            'video_episode_count' => $data['video']['episode_count'],
+            'original_id' => $data['id'],
+            'embed' => $data['embed'],
+            'name' => $data['name'],
+            'number' => $data['number'],
+            'image_src' => $data['image']['src'],
+            'image_alt' => $data['image']['alt'],
+            'sub' => $data['sub'],
+            'original_date' => date('Y-m-d H:i:s', strtotime($data['date']))
+        ], true);
 
-        $crawler->filter('ul.pagination')->filter('li')->each(function (Crawler $item) use (&$previousPage, &$nextPage, &$activePage, &$urls) {
-            $class = $item->attr('class') ?? '';
-            $href = $item->filter('a')->attr('href');
-            if (str_contains($class, 'previous')) {
-                $previousPage = $href;
-            } else if (str_contains($class, 'next')) {
-                $nextPage = $href;
-            } else {
-                if (str_contains($class, 'active')) {
-                    $activePage = $href;
-                }
-                $urls[] = $href;
-            }
-        });
-
-        return [
-            'count' => count($episodes),
-            'previous_page_url' => is_string($previousPage) ? $path . $previousPage . ($keyword ? "&keyword=$keyword" : "") : $previousPage,
-            'next_page_url' => is_string($nextPage) ? $path . $nextPage . ($keyword ? "&keyword=$keyword" : "")  : $nextPage,
-            'active_url' => is_string($activePage) ? $path . $activePage . ($keyword ? "&keyword=$keyword" : "")  : $activePage,
-            'more_urls' => array_map(fn ($url) => $path . $url . ($keyword ? "&keyword=$keyword" : ""), $urls),
-            'data' => $episodes
-        ];
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(201);
+        return json_encode(['episode' => $resultEpisode]);
     }
 
-    private function getEpisodes(Crawler $crawler, $includeSub = false): array
+    public function getExistingEpisodes(): string
     {
-        return $crawler->filter('li.video-block')->each(function (Crawler $episode) use ($includeSub) {
+        $data = $this->request->getBody();
+        $videoCover = $data['video_cover'];
+        $tag = $data['tag'];
 
-            $data = $this->getEpisodeNormalData($episode);
+        $results = $this->qb->select('episodes', ['slug'], ['video_cover' => $videoCover, 'tag' => $tag], [], 0);
 
-            if ($includeSub) {
-                try {
-                    $sub = trim($episode->filter('div.type')?->text()) == 'SUB';
-                } catch (InvalidArgumentException $e) {
-                    $sub = false;
-                    unset($e);
-                } finally {
-                    $data['sub'] = $sub;
-                }
-            }
-            return $data;
-        });
+        $results = array_map(fn ($result) => $result['slug'] = $this->reverseNormaliseSlug($result['slug'], $tag), $results);
+
+        return json_encode($results);
     }
 
-    private function getEpisodeNormalData(Crawler $episode): array
+    private function normaliseSlug(string $slug, string $tag): string
     {
-        $slug = $episode->filter('a')->attr('href');
-        $explodedSlug = explode('-', $slug);
-        $number = end($explodedSlug);
-        $name = trim($episode->filter('div.name')->text());
-        $image = $episode->filter('div.img')->filter('img');
-        $date = trim($episode->filter('span.date')->text());
-        $meta = trim($episode->filter('div.meta')->text());
-
-        return [
-            'slug' => $slug,
-            'name' => $name,
-            'number' => $number,
-            'image' => [
-                'src' => $image->attr('src'),
-                'alt' => $image->attr('alt')
-            ],
-            'meta' => $meta,
-            'created_at' => $date,
-            'updated_at' => $date
-        ];
+        return str_replace('videos', $tag, $slug);
     }
 
-    public function random(): string
+    private function reverseNormaliseSlug(string $slug, string $tag): string
     {
-        return "Not Implemented";
+        return str_replace($tag, 'videos', $slug);
     }
 }

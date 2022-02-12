@@ -25,9 +25,9 @@ class Request
     public function getBody(): array
     {
         if ($this->method() === 'GET') {
-            return $_GET;
+            return array_map(fn ($g) => is_string($g) && empty($g) ? null : $g, $_GET);
         }
-        return $_POST;
+        return array_map(fn ($p) => is_string($p) && empty($p) ? null : $p, $_POST);
     }
 
     public function setParameters(array $parameters = [])

@@ -6,19 +6,19 @@ import MoviePoster from './MoviePoster';
 
 export default function MovieItem({ movie }) {
 
-    const [detail, setDetail] = useState(null);
+    // const [detail, setDetail] = useState(null);
     const context = useContext(HomeContext);
 
-    useEffect(() => {
-        const controller = new AbortController();
-        repository.getDetail(movie.slug, controller).then(response => {
-            setDetail(response.data);
-        }).catch(reason => console.log(reason));
+    // useEffect(() => {
+    //     const controller = new AbortController();
+    //     repository.getDetail(movie.slug, controller).then(response => {
+    //         setDetail(response.data);
+    //     }).catch(reason => console.log(reason));
 
-        return () => {
-            controller.abort();
-        };
-    }, [movie]);
+    //     return () => {
+    //         controller.abort();
+    //     };
+    // }, [movie]);
 
     return (
         <div className="flex py-2 max-h-64 md:max-h-72 lg:max-h-min">
@@ -27,12 +27,11 @@ export default function MovieItem({ movie }) {
                 <button className="text-base text-left font-semibold line-clamp-2 hover:text-sky-400 duration-200"
                     onClick={e => context.setSelectedMovie(movie)}>
                     {movie.name}
-                    {/* {detail ? detail.video_title : 'Loading...'} */}
                 </button>
 
                 <div className="flex-grow flex flex-col items-stretch my-2">
                     <blockquote className={clsx("text-sm italic tracking-wide border-l-4 border-sky-400 pl-4", "line-clamp-4 sm:line-clamp-5 md:line-clamp-7 lg:line-clamp-9 xl:line-clamp-11 2xl:line-clamp-13")}>
-                        {detail ? detail.video_description : 'Loading...'}
+                        {movie.video_description}
                     </blockquote>
 
                     <div className="flex mt-4">
@@ -56,7 +55,7 @@ export default function MovieItem({ movie }) {
                         </span>
                     </div> */}
                     <h6 className="text-sm italic">
-                        {detail?.related_episodes?.length ?? 0} {(detail?.related_episodes?.length ?? 0) === 1 ? "Episode" : "Episodes"}
+                        {movie.video_episode_count} {movie.video_episode_count === 1 ? 'episode' : 'episodes'}
                     </h6>
                     <time className="text-sm font-light italic">{movie.original_date}</time>
                 </div>
