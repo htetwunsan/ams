@@ -17,8 +17,8 @@ $urls = [
 class Scraper
 {
     private $baseUrl = 'https://asianembed.io';
-    // private $postUrl = 'https://ams.htetwunsan.com';
-    private $postUrl = 'http://localhost:8001';
+    private $postUrl = 'https://ams.htetwunsan.com';
+    // private $postUrl = 'http://localhost:8001';
 
     private function getCrawler(string $url): Crawler
     {

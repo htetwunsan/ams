@@ -9,6 +9,9 @@
 </head>
 
 <body>
+    <form>
+        <input type="text" name="url" /><input type="submit" value="Submit" />
+    </form>
     <!--Standard-->
     <!-- <video class="jw-video jw-reset" tabindex="-1" disableremoteplayback="" webkit-playsinline="" playsinline="" src="https://asianloadcdn.com/storage-52/e0310deaf2447167567f81e69128fbc8/EP.85.v0.1644222666.720p.mp4?mac=%2F1F8%2FXldP%2BMHqkt4fx%2BQkD1QYKi7rVSqHU44WrZe3VE%3D&amp;vip=103.154.240.181&amp;expiry=1644503039289" style="object-fit: fill;"></video> -->
     <!--StreamSB-->

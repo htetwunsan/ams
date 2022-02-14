@@ -4,6 +4,7 @@ import MoviePoster from './MoviePoster';
 import ContentLoader from 'react-content-loader';
 import { HomeContext } from '../pages/HomePage';
 import clsx from 'clsx';
+import { format } from 'timeago.js';
 
 export default function MovieDetail({ movie }) {
 
@@ -66,7 +67,7 @@ export default function MovieDetail({ movie }) {
                 </div>
 
                 <div className="flex justify-end leading-none mb-2">
-                    <time className="text-sm font-light italic">{movie.original_date}</time>
+                    <time className="text-sm font-light italic" datetime={movie.original_date}>{format(movie.original_date)}</time>
                 </div>
             </article>
 
@@ -86,7 +87,7 @@ export default function MovieDetail({ movie }) {
                                     Episode - {movie.number}
                                 </h6>
                                 <time className="">
-                                    <time className="text-xs font-light italic leading-none">{movie.original_date}</time>
+                                    <time className="text-xs font-light italic leading-none" datetime={movie.original_date}>{format(movie.original_date)}</time>
                                 </time>
                             </li>
                         ))
