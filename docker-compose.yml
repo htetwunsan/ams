@@ -33,7 +33,7 @@ services:
     webserver:
         image: nginx:1.21.6-alpine
         ports:
-            - '${APP_PORT:-8001}:80'
+            - '${APP_PORT:-8005}:80'
         restart: always
         environment:
             - NGINX_HOST=localhost
